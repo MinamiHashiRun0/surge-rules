@@ -1,0 +1,42 @@
+name: Update Surge Rules
+
+on:
+  schedule:
+    # 每天 UTC 0 点执行一次（可调整）
+    - cron: '0 0 * * *'
+  workflow_dispatch:   # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download upstream EasyList
+        run: |
+          curl -sL -o upstream.txt "${{ vars.EASYLIST_URL }}"
+        env:
+          EASYLIST_URL: https://raw.githubusercontent.com/afwfv/DD-AD/refs/heads/release/easylist.txt  # 你的上游地址
+
+      - name: Convert to Surge rules
+        run: |
+          python convert.py upstream.txt whitelist.list blacklist.list
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add whitelist.list blacklist.list
+          # 仅当文件有变动才提交
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Auto-update rules $(date -u +%Y-%m-%d)"
+            git push
+          fi
