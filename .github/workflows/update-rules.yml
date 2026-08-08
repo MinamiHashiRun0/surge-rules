@@ -20,7 +20,7 @@ jobs:
 
       - name: Download upstream EasyList
         run: |
-          curl -sL -o upstream.txt "${{ vars.EASYLIST_URL }}"
+          curl -sL -o upstream.txt "https://raw.githubusercontent.com/afwfv/DD-AD/refs/heads/release/easylist.txt"
         env:
           EASYLIST_URL: https://raw.githubusercontent.com/afwfv/DD-AD/refs/heads/release/easylist.txt  # 你的上游地址
 
